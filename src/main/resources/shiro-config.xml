@@ -1,0 +1,92 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xsi:schemaLocation="http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache-4.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<!-- web.xml中shiro的filter对应的bean -->
+	<!-- Shiro 的Web过滤器 -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<!-- 如果没有认证将会请求此地址进行认证(登录页面)，默认为/login.jsp请求此地址将由formAuthenticationFilter进行表单认证 -->
+		<property name="loginUrl" value="/login" />
+		<property name="unauthorizedUrl" value="/refuse"></property>
+		<property name="filters">
+			<map>
+				<!-- FormAuthenticationFilter是基于表单认证的过虑器 -->
+				<entry key="authc" value-ref="formAuthenticationFilter" />
+			</map>
+		</property>
+		
+		<!-- 过虑器链定义，从上向下顺序执行，一般将/**放在最下边 -->
+		<property name="filterChainDefinitions">
+			<value>
+				<!-- 退出拦截，请求logout执行退出操作 -->
+				/logout = logout
+				<!-- 无权访问页面 -->
+				/refuse = anon
+				<!-- 静态资源 -->
+				/resources/js/** = anon
+				/resources/images/** = anon
+				/resources/css/** = anon
+				<!-- 验证码 -->
+				/validatecode = anon
+				<!-- authc表示需要认证(登录成功)才能使用 -->
+				/** = authc
+			</value>
+		</property>
+	</bean>
+	
+	
+	<!-- 基于Form表单的身份验证过滤器，不配置将也会注册此过虑器，表单中的用户账号、密码及loginurl将采用默认值 -->
+	<bean id="formAuthenticationFilter" class="org.apache.shiro.web.filter.authc.FormAuthenticationFilter">
+		<!-- login.jsp页面表单中账号的input名称，也可以不配置默认username -->
+		<property name="usernameParam" value="username" />
+		<!-- login.jsp表单中密码的input名称 ，也可以不配置默认password-->
+		<property name="passwordParam" value="password" />
+ 	</bean>
+	
+
+	<!-- 安全管理器 -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="userRealm" />
+		<property name="cacheManager" ref="cacheManager"/>
+		<property name="sessionManager" ref="sessionManager" />
+	</bean>
+	
+	<!-- 会话管理器 -->
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <!-- session的失效时长，单位毫秒 -->
+        <property name="globalSessionTimeout" value="600000"/>
+        <!-- 删除失效的session -->
+        <property name="deleteInvalidSessions" value="true"/>
+    </bean>
+	
+	
+	<!-- 缓存管理器 使用Ehcache实现-->  
+    <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">  
+        <property name="cacheManager" ref="ehCacheManager"/>  
+	</bean>
+	
+	<bean id="ehCacheManager" class ="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">  
+	    <property name="configLocation" value="classpath:ehcache.xml" />  
+	    <property name="shared" value="true"></property>  
+	</bean>
+	
+	
+	
+	<!-- 凭证匹配器 -->
+	<bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+		<property name="hashAlgorithmName" value="md5" />
+		<property name="hashIterations" value="1" />
+	</bean>
+
+	<!-- 修改原有的自定义 realm 增加凭证匹配器 -->
+	<bean id="userRealm" class="com.oracle.shiro.realm.CustomRealm">
+		<property name="credentialsMatcher" ref="credentialsMatcher" />
+	</bean>
+	
+
+
+</beans>

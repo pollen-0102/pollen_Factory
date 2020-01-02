@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<!-- 子容器只包含Controller -->
+	<context:component-scan base-package="com.oracle.controller" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+	
+	<!-- 可以使用 Spring MVC @Controller注解 -->
+	<!-- 可以使用HandlerMapping 和HandlerAdapter-->
+	<mvc:annotation-driven/>
+	
+	
+	<!-- 开启aop，对类代理 -->
+	<aop:config></aop:config>
+	
+	<!-- 开启shiro注解支持 -->
+	<bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager" />
+	</bean>
+	
+<!--  	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+			<bean class="com.oracle.interceptor.MyIn1">
+				<constructor-arg index="0" value="/emp/login"></constructor-arg>
+			</bean>
+		</mvc:interceptor>
+	</mvc:interceptors> -->
+	
+<!-- 	<bean id="myExceptionHandler" class="com.oracle.exception.MyExceptionHandler"></bean> -->
+	
+
+	<!-- 可以任意访问静态资源  配置静态资源的路径  *只能访问resources/js  **resources/js/xxx-->
+ 	<mvc:resources mapping="/resources/**" location="/resources/" />
+
+	<!--使用 @Controllers解析视图查找.jsp在/WEB-INF/jsp目录 -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	    <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/main/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+	<!-- 注解进入后台 -->
+ 	<mvc:view-controller path="/" view-name="redirec:/index" />
+
+</beans>
