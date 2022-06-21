@@ -140,7 +140,7 @@
  	<dependency>
 		  <groupId>mysql</groupId>
 		  <artifactId>mysql-connector-java</artifactId>
-		  <version>5.1.25</version>
+		  <version>8.0.28</version>
 	</dependency>
 	<!-- 使用连接池阿里巴巴 开源的连接池druid -->
 	<dependency>
